@@ -38,7 +38,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendVerificationEmail = async ({ to, name, verifyLink }) => {
   const response = await resend.emails.send({
     from: "Ecommerce App <onboarding@resend.dev>",
-    to: ["arpithachakote14@gmail.com"],
+    to: ["krnarendra2000@gmail.com"],
     subject: "Verify your email",
     html: `
       <h3>Hello ${name}</h3>
