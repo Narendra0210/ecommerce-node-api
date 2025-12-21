@@ -359,38 +359,6 @@ exports.register = async (req, res) => {
 /* ============================
    2️⃣ VERIFY EMAIL
    ============================ */
-// exports.verifyEmail = async (req, res) => {
-//   try {
-//     const { token } = req.params;
-
-//     const [rows] = await pool.query(
-//       "SELECT user_id FROM users WHERE email_verify_token = ?",
-//       [token]
-//     );
-
-//     if (rows.length === 0) {
-//       return res.status(400).send("Invalid or expired verification link");
-//     }
-
-//     await pool.query(
-//       `UPDATE users
-//        SET email_verified = 1, email_verify_token = NULL
-//        WHERE email_verify_token = ?`,
-//       [token]
-//     );
-
-//     res.send(`
-//       <h2>Email verified successfully ✅</h2>
-//       <p>You can now login.</p>
-//     `);
-
-//   } catch (error) {
-//     console.error("Verify email error:", error);
-//     res.status(500).send("Server error");
-//   }
-// };
-
-
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -407,17 +375,49 @@ exports.verifyEmail = async (req, res) => {
     await pool.query(
       `UPDATE users
        SET email_verified = 1, email_verify_token = NULL
-       WHERE user_id = ?`,
-      [rows[0].user_id]
+       WHERE email_verify_token = ?`,
+      [token]
     );
 
-    res.send("Email verified successfully. You can now login.");
+    res.send(`
+      <h2>Email verified successfully ✅</h2>
+      <p>You can now login.</p>
+    `);
 
   } catch (error) {
-    console.error("VERIFY EMAIL ERROR:", error);
+    console.error("Verify email error:", error);
     res.status(500).send("Server error");
   }
 };
+
+
+// exports.verifyEmail = async (req, res) => {
+//   try {
+//     const { token } = req.params;
+
+//     const [rows] = await pool.query(
+//       "SELECT user_id FROM users WHERE email_verify_token = ?",
+//       [token]
+//     );
+
+//     if (rows.length === 0) {
+//       return res.status(400).send("Invalid or expired verification link");
+//     }
+
+//     await pool.query(
+//       `UPDATE users
+//        SET email_verified = 1, email_verify_token = NULL
+//        WHERE user_id = ?`,
+//       [rows[0].user_id]
+//     );
+
+//     res.send("Email verified successfully. You can now login.");
+
+//   } catch (error) {
+//     console.error("VERIFY EMAIL ERROR:", error);
+//     res.status(500).send("Server error");
+//   }
+// };
 
 /* ============================
    3️⃣ LOGIN
