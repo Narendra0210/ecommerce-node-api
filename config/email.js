@@ -40,35 +40,22 @@ if (!process.env.RESEND_API_KEY) {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendVerificationEmail = async ({ to, name, verifyLink }) => {
-  return await resend.emails.send({
-    from: "krnarendra2000@gmail.com", // ✅ safe sender
-    to,
+  const response = await resend.emails.send({
+    from: "Ecommerce App <onboarding@resend.dev>", // ✅ MUST USE THIS
+    to: [to], // ⚠️ array is REQUIRED
     subject: "Verify your email",
     html: `
-      <div style="font-family: Arial, sans-serif;">
-        <h2>Hello ${name},</h2>
-        <p>Please verify your email by clicking the button below:</p>
-        <a 
-          href="${verifyLink}" 
-          style="
-            display:inline-block;
-            padding:10px 20px;
-            background:#4F46E5;
-            color:#fff;
-            text-decoration:none;
-            border-radius:5px;
-          "
-        >
-          Verify Email
-        </a>
-        <p style="margin-top:20px;">
-          If you didn’t create an account, you can ignore this email.
-        </p>
-      </div>
+      <h3>Hello ${name}</h3>
+      <p>Please verify your email:</p>
+      <a href="${verifyLink}">Verify Email</a>
     `
   });
-};
 
-module.exports = {
-  sendVerificationEmail
+  console.log("RESEND RESPONSE:", response);
+
+  if (response.error) {
+    throw new Error(response.error.message);
+  }
+
+  return response;
 };
