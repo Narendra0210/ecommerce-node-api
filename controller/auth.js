@@ -158,10 +158,73 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const transporter = require("../config/email");
+const emailApi = require("../config/email");
 
 /* ============================
    1️⃣ REGISTER (CREATE USER)
    ============================ */
+// exports.register = async (req, res) => {
+//   try {
+//     const { full_name, email, password, mobile } = req.body;
+
+//     if (!full_name || !email || !password || !mobile) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "All fields are required"
+//       });
+//     }
+
+//     // check existing user
+//     const [existing] = await pool.query(
+//       "SELECT user_id FROM users WHERE email = ?",
+//       [email]
+//     );
+
+//     if (existing.length > 0) {
+//       return res.status(409).json({
+//         success: false,
+//         message: "Email already registered"
+//       });
+//     }
+
+//     const passwordHash = await bcrypt.hash(password, 10);
+//     const verifyToken = crypto.randomBytes(32).toString("hex");
+
+//     await pool.query(
+//       `INSERT INTO users
+//        (full_name, email, password_hash, mobile, role, is_active, email_verified, email_verify_token, created_at)
+//        VALUES (?, ?, ?, ?, 'USER', 1, 0, ?, CURRENT_TIMESTAMP)`,
+//       [full_name, email, passwordHash, mobile, verifyToken]
+//     );
+// console.log(`${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`);
+
+//     const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
+
+//     await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to: email,
+//       subject: "Verify your email",
+//       html: `
+//         <h3>Hello ${full_name}</h3>
+//         <p>Please verify your email by clicking below:</p>
+//         <a href="${verifyLink}">Verify Email</a>
+//       `
+//     });
+
+//     res.json({
+//       success: true,
+//       message: "Registration successful. Verification email sent."
+//     });
+
+//   } catch (error) {
+//     console.error("Register error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error"
+//     });
+//   }
+// };
+
 exports.register = async (req, res) => {
   try {
     const { full_name, email, password, mobile } = req.body;
@@ -195,15 +258,15 @@ exports.register = async (req, res) => {
        VALUES (?, ?, ?, ?, 'USER', 1, 0, ?, CURRENT_TIMESTAMP)`,
       [full_name, email, passwordHash, mobile, verifyToken]
     );
-console.log(`${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`);
 
     const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
+    // ✅ SEND EMAIL USING BREVO
+    await emailApi.sendTransacEmail({
+      sender: { email: "no-reply@yourapp.com", name: "Ecommerce App" },
+      to: [{ email }],
       subject: "Verify your email",
-      html: `
+      htmlContent: `
         <h3>Hello ${full_name}</h3>
         <p>Please verify your email by clicking below:</p>
         <a href="${verifyLink}">Verify Email</a>
@@ -216,13 +279,15 @@ console.log(`${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`);
     });
 
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("REGISTER ERROR:", error);
     res.status(500).json({
       success: false,
-      message: "Server error"
+      message: error.message
     });
   }
 };
+
+
 
 /* ============================
    2️⃣ VERIFY EMAIL
