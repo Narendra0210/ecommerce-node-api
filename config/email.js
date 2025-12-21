@@ -29,20 +29,19 @@
 // module.exports = emailApi;
 
 
-require("dotenv").config(); // 🔴 MUST be on top
+require("dotenv").config();
 
 const { Resend } = require("resend");
 
 if (!process.env.RESEND_API_KEY) {
   throw new Error("RESEND_API_KEY is missing");
 }
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-module.exports = resend;
-
-exports.sendVerificationEmail = async ({ to, name, verifyLink }) => {
+const sendVerificationEmail = async ({ to, name, verifyLink }) => {
   return await resend.emails.send({
-    from: "krnarendra2000@gmail.com",
+    from: "krnarendra2000@gmail.com", // ✅ safe sender
     to,
     subject: "Verify your email",
     html: `
@@ -70,3 +69,6 @@ exports.sendVerificationEmail = async ({ to, name, verifyLink }) => {
   });
 };
 
+module.exports = {
+  sendVerificationEmail
+};
