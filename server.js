@@ -14,24 +14,23 @@ const itemRouter = require("./routes/itemRouter");
 dotenv.config();
 //rest object 
 const app  = express()
-//port
-const port = process.env.PORT || 8000
-
-//conditoionalli listen
-mysqlPool.query('select 1').then(()=>{
-
-    console.log("mysql db connected");
-    
-app.listen(port,() =>{
-   console.log(`server running welcome ${process.env.PORT}`)
-});
-}).catch(()=>{
-console.log("connection error");
-
-})
 
 app.use(cors());
 app.use(express.json());
+//port
+const port = process.env.PORT || 8000
+
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+//conditoionalli listen
+mysqlPool.query("SELECT 1")
+  .then(() => console.log("mysql db connected"))
+  .catch(err => console.error("db connection failed:", err.message));
+
+
 
 app.use("/api/auth", loginRouter);
 app.use("/api/menu", categoryRouter);
