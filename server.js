@@ -25,6 +25,10 @@ app.use("/api/subcategories", subCategoryRouter);
 app.use("/api/items", itemRouter);
 app.use("/api/cart", cartRouter);
 
+
+app.get("/", (req, res) => {
+  res.send("API ROOT WORKING");
+});
 // Test route
 app.get("/test", (req, res) => {
   res.status(200).send("<h1>nodejs mysql welcome</h1>");

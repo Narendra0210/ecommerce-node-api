@@ -6,4 +6,9 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.get("/verify-email/:token", authController.verifyEmail);
 
+
+router.get("/__debug", (req, res) => {
+  res.send("LOGIN ROUTER IS WORKING");
+});
+
 module.exports = router;
