@@ -157,7 +157,7 @@ const pool = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const transporter = require("../config/email");
+// const transporter = require("../config/email");
 const emailApi = require("../config/email");
 
 /* ============================
