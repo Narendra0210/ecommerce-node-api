@@ -225,6 +225,73 @@ const emailApi = require("../config/email");
 //   }
 // };
 
+
+//bravo
+// exports.register = async (req, res) => {
+//   try {
+//     const { full_name, email, password, mobile } = req.body;
+
+//     if (!full_name || !email || !password || !mobile) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "All fields are required"
+//       });
+//     }
+
+//     // check existing user
+//     const [existing] = await pool.query(
+//       "SELECT user_id FROM users WHERE email = ?",
+//       [email]
+//     );
+
+//     if (existing.length > 0) {
+//       return res.status(409).json({
+//         success: false,
+//         message: "Email already registered"
+//       });
+//     }
+
+//     const passwordHash = await bcrypt.hash(password, 10);
+//     const verifyToken = crypto.randomBytes(32).toString("hex");
+
+//     await pool.query(
+//       `INSERT INTO users
+//        (full_name, email, password_hash, mobile, role, is_active, email_verified, email_verify_token, created_at)
+//        VALUES (?, ?, ?, ?, 'USER', 1, 0, ?, CURRENT_TIMESTAMP)`,
+//       [full_name, email, passwordHash, mobile, verifyToken]
+//     );
+
+//     const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
+
+//     // ✅ SEND EMAIL USING BREVO
+//     await emailApi.sendTransacEmail({
+//       sender: { email: "no-reply@yourapp.com", name: "Ecommerce App" },
+//       to: [{ email }],
+//       subject: "Verify your email",
+//       htmlContent: `
+//         <h3>Hello ${full_name}</h3>
+//         <p>Please verify your email by clicking below:</p>
+//         <a href="${verifyLink}">Verify Email</a>
+//       `
+//     });
+
+//     res.json({
+//       success: true,
+//       message: "Registration successful. Verification email sent."
+//     });
+
+//   } catch (error) {
+//     console.error("REGISTER ERROR:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+//   }
+// };
+
+
+const { sendVerificationEmail } = require("../config/email");
+
 exports.register = async (req, res) => {
   try {
     const { full_name, email, password, mobile } = req.body;
@@ -236,7 +303,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    // check existing user
+    // 🔎 Check existing user
     const [existing] = await pool.query(
       "SELECT user_id FROM users WHERE email = ?",
       [email]
@@ -249,9 +316,13 @@ exports.register = async (req, res) => {
       });
     }
 
+    // 🔐 Hash password
     const passwordHash = await bcrypt.hash(password, 10);
+
+    // 🔑 Generate verification token
     const verifyToken = crypto.randomBytes(32).toString("hex");
 
+    // 💾 Save user
     await pool.query(
       `INSERT INTO users
        (full_name, email, password_hash, mobile, role, is_active, email_verified, email_verify_token, created_at)
@@ -259,21 +330,17 @@ exports.register = async (req, res) => {
       [full_name, email, passwordHash, mobile, verifyToken]
     );
 
+    // 🔗 Verification link
     const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
 
-    // ✅ SEND EMAIL USING BREVO
-    await emailApi.sendTransacEmail({
-      sender: { email: "no-reply@yourapp.com", name: "Ecommerce App" },
-      to: [{ email }],
-      subject: "Verify your email",
-      htmlContent: `
-        <h3>Hello ${full_name}</h3>
-        <p>Please verify your email by clicking below:</p>
-        <a href="${verifyLink}">Verify Email</a>
-      `
+    // 📧 Send email via Resend
+    await sendVerificationEmail({
+      to: email,
+      name: full_name,
+      verifyLink
     });
 
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Registration successful. Verification email sent."
     });
@@ -282,7 +349,7 @@ exports.register = async (req, res) => {
     console.error("REGISTER ERROR:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: "Internal server error"
     });
   }
 };
@@ -292,6 +359,38 @@ exports.register = async (req, res) => {
 /* ============================
    2️⃣ VERIFY EMAIL
    ============================ */
+// exports.verifyEmail = async (req, res) => {
+//   try {
+//     const { token } = req.params;
+
+//     const [rows] = await pool.query(
+//       "SELECT user_id FROM users WHERE email_verify_token = ?",
+//       [token]
+//     );
+
+//     if (rows.length === 0) {
+//       return res.status(400).send("Invalid or expired verification link");
+//     }
+
+//     await pool.query(
+//       `UPDATE users
+//        SET email_verified = 1, email_verify_token = NULL
+//        WHERE email_verify_token = ?`,
+//       [token]
+//     );
+
+//     res.send(`
+//       <h2>Email verified successfully ✅</h2>
+//       <p>You can now login.</p>
+//     `);
+
+//   } catch (error) {
+//     console.error("Verify email error:", error);
+//     res.status(500).send("Server error");
+//   }
+// };
+
+
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -308,17 +407,14 @@ exports.verifyEmail = async (req, res) => {
     await pool.query(
       `UPDATE users
        SET email_verified = 1, email_verify_token = NULL
-       WHERE email_verify_token = ?`,
-      [token]
+       WHERE user_id = ?`,
+      [rows[0].user_id]
     );
 
-    res.send(`
-      <h2>Email verified successfully ✅</h2>
-      <p>You can now login.</p>
-    `);
+    res.send("Email verified successfully. You can now login.");
 
   } catch (error) {
-    console.error("Verify email error:", error);
+    console.error("VERIFY EMAIL ERROR:", error);
     res.status(500).send("Server error");
   }
 };
