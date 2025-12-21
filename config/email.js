@@ -33,16 +33,12 @@ require("dotenv").config();
 
 const { Resend } = require("resend");
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("RESEND_API_KEY is missing");
-}
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendVerificationEmail = async ({ to, name, verifyLink }) => {
   const response = await resend.emails.send({
-    from: "Ecommerce App <onboarding@resend.dev>", // ✅ MUST USE THIS
-    to: [to], // ⚠️ array is REQUIRED
+    from: "Ecommerce App <onboarding@resend.dev>",
+    to: [to],
     subject: "Verify your email",
     html: `
       <h3>Hello ${name}</h3>
@@ -51,11 +47,13 @@ const sendVerificationEmail = async ({ to, name, verifyLink }) => {
     `
   });
 
-  console.log("RESEND RESPONSE:", response);
-
   if (response.error) {
     throw new Error(response.error.message);
   }
 
   return response;
+};
+
+module.exports = {
+  sendVerificationEmail
 };
