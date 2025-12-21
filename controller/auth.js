@@ -199,7 +199,7 @@ console.log(`${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`);
 
     const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
 
-     transporter.sendMail({
+    await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Verify your email",
