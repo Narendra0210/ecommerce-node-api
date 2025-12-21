@@ -29,6 +29,7 @@
 // module.exports = emailApi;
 
 
+require("dotenv").config(); // 🔴 MUST be on top
 
 const { Resend } = require("resend");
 
