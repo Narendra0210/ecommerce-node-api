@@ -158,8 +158,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 // const transporter = require("../config/email");
-// const emailApi = require("../config/email");
-const  sendVerificationEmail  = require("../config/email");
+const emailApi = require("../config/email");
 
 /* ============================
    1️⃣ REGISTER (CREATE USER)
@@ -291,6 +290,7 @@ const  sendVerificationEmail  = require("../config/email");
 // };
 
 
+const { sendVerificationEmail } = require("../config/email");
 
 exports.register = async (req, res) => {
   try {
