@@ -29,6 +29,7 @@ app.use("/api/cart", cartRouter);
 app.get("/test", (req, res) => {
   res.status(200).send("<h1>nodejs mysql welcome</h1>");
 });
+console.log("DB_NAME from env:", process.env.DB_NAME);
 
 // Start server
 const port = process.env.PORT || 8000;
