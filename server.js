@@ -1,60 +1,54 @@
-const express  = require('express');
+const express = require("express");
 const cors = require("cors");
-const dotenv = require('dotenv');
-const mysqlPool = require('./config/db');
+const mysqlPool = require("./config/db");
 
-require("dotenv").config();
+// Load .env only locally
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 
 const loginRouter = require("./routes/loginRouter");
 const categoryRouter = require("./routes/categoryRouter");
 const subCategoryRouter = require("./routes/subCategoryRouter");
 const itemRouter = require("./routes/itemRouter");
- const cartRouter = require("./routes/cartRouter");
+const cartRouter = require("./routes/cartRouter");
 
-dotenv.config();
-//rest object 
-const app  = express()
+const app = express();
 
 app.use(cors());
 app.use(express.json());
-//port
-const port = process.env.PORT || 8000
 
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-
-//conditoionalli listen
-mysqlPool.query("SELECT 1")
-  .then(() => console.log("mysql db connected"))
-  .catch(err => console.error("db connection failed:", err.message));
-
-
-
+// Routes
 app.use("/api/auth", loginRouter);
 app.use("/api/menu", categoryRouter);
 app.use("/api/subcategories", subCategoryRouter);
 app.use("/api/items", itemRouter);
 app.use("/api/cart", cartRouter);
 
-//route  
-app.get('/test', (req,res) =>{
-    res.status(200).send('<h1> nodejs my sql welcome</h1>')
-})
+// Test route
+app.get("/test", (req, res) => {
+  res.status(200).send("<h1>nodejs mysql welcome</h1>");
+});
 
-app.use(express.json());
+// Start server
+const port = process.env.PORT || 8000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 
+// Test DB connection (DO NOT EXIT APP)
+mysqlPool.query("SELECT 1")
+  .then(() => console.log("mysql db connected"))
+  .catch(err => console.error("db connection failed:", err.message));
 
-
-
+// Email test
 const transporter = require("./config/email");
 
 app.get("/test-mail", async (req, res) => {
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // send to yourself
+      to: process.env.EMAIL_USER,
       subject: "Test Email",
       text: "Email setup is working 🎉"
     });
@@ -65,6 +59,3 @@ app.get("/test-mail", async (req, res) => {
     res.status(500).send("Email failed");
   }
 });
-
- 
-
