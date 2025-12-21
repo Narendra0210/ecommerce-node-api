@@ -42,7 +42,7 @@ module.exports = resend;
 
 exports.sendVerificationEmail = async ({ to, name, verifyLink }) => {
   return await resend.emails.send({
-    from: "Ecommerce App <onboarding@resend.dev>",
+    from: "krnarendra2000@gmail.com",
     to,
     subject: "Verify your email",
     html: `
