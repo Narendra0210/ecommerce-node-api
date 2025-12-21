@@ -195,6 +195,7 @@ exports.register = async (req, res) => {
        VALUES (?, ?, ?, ?, 'USER', 1, 0, ?, CURRENT_TIMESTAMP)`,
       [full_name, email, passwordHash, mobile, verifyToken]
     );
+console.log(`${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`);
 
     const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
 
