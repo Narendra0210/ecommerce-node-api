@@ -248,3 +248,66 @@ exports.getOrderDetails = async (req, res) => {
   }
 };
 
+/* ============================
+   CLOSE/COMPLETE ORDER
+   ============================ */
+exports.closeOrder = async (req, res) => {
+  try {
+    const { order_id } = req.params;
+
+    if (!order_id) {
+      return res.status(400).json({
+        success: false,
+        message: "order_id is required"
+      });
+    }
+
+    // Check if order exists
+    const [orders] = await pool.query(
+      "SELECT order_id, status FROM orders WHERE order_id = ?",
+      [order_id]
+    );
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    const currentStatus = orders[0].status;
+
+    // Check if order is already closed/completed
+    if (currentStatus === 'completed' || currentStatus === 'closed') {
+      return res.status(400).json({
+        success: false,
+        message: `Order is already ${currentStatus}`
+      });
+    }
+
+    // Update order status to completed
+    await pool.query(
+      `UPDATE orders 
+       SET status = 'completed', updated_at = NOW()
+       WHERE order_id = ?`,
+      [order_id]
+    );
+
+    res.json({
+      success: true,
+      message: "Order closed successfully",
+      data: {
+        order_id: parseInt(order_id),
+        status: 'completed'
+      }
+    });
+
+  } catch (error) {
+    console.error("Close order error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+

@@ -12,5 +12,8 @@ router.get("/user/:user_id", authMiddleware, orderController.getUserOrders);
 // Get order details by order_id
 router.get("/:order_id", authMiddleware, orderController.getOrderDetails);
 
+// Close/Complete order
+router.put("/:order_id/close", authMiddleware, orderController.closeOrder);
+
 module.exports = router;
 
