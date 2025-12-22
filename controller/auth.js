@@ -361,8 +361,9 @@ exports.register = async (req, res) => {
    ============================ */
 exports.verifyEmail = async (req, res) => {
   try {
-    console.log("verifyEmail called - req.params:", req.params);
-    const { token } = req.params;
+    console.log("verifyEmail called - req.params:", req.params, "req.query:", req.query);
+    // Support both path parameter and query parameter
+    const token = req.params.token || req.query.token;
 
     if (!token) {
       return res.status(400).send("Token is required");
