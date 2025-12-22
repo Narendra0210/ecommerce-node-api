@@ -8,6 +8,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const loginRouter = require("./routes/loginRouter");
+const verificationRouter = require("./routes/verificationRouter");
 const categoryRouter = require("./routes/categoryRouter");
 const subCategoryRouter = require("./routes/subCategoryRouter");
 const itemRouter = require("./routes/itemRouter");
@@ -20,6 +21,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", loginRouter);
+app.use("/api/verification", verificationRouter);
 app.use("/api/menu", categoryRouter);
 app.use("/api/subcategories", subCategoryRouter);
 app.use("/api/items", itemRouter);
