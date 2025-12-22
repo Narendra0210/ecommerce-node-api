@@ -363,6 +363,9 @@ exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
 
+console.log(req.params);
+
+
     const [rows] = await pool.query(
       "SELECT user_id FROM users WHERE email_verify_token = ?",
       [token]
@@ -391,33 +394,7 @@ exports.verifyEmail = async (req, res) => {
 };
 
 
-// exports.verifyEmail = async (req, res) => {
-//   try {
-//     const { token } = req.params;
 
-//     const [rows] = await pool.query(
-//       "SELECT user_id FROM users WHERE email_verify_token = ?",
-//       [token]
-//     );
-
-//     if (rows.length === 0) {
-//       return res.status(400).send("Invalid or expired verification link");
-//     }
-
-//     await pool.query(
-//       `UPDATE users
-//        SET email_verified = 1, email_verify_token = NULL
-//        WHERE user_id = ?`,
-//       [rows[0].user_id]
-//     );
-
-//     res.send("Email verified successfully. You can now login.");
-
-//   } catch (error) {
-//     console.error("VERIFY EMAIL ERROR:", error);
-//     res.status(500).send("Server error");
-//   }
-// };
 
 /* ============================
    3️⃣ LOGIN
