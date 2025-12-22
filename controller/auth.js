@@ -330,8 +330,8 @@ exports.register = async (req, res) => {
       [full_name, email, passwordHash, mobile, verifyToken]
     );
 
-    // 🔗 Verification link
-    const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email/${verifyToken}`;
+    // 🔗 Verification link (using query param for Render compatibility)
+    const verifyLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${verifyToken}`;
 
     // 📧 Send email via Resend
     await sendVerificationEmail({

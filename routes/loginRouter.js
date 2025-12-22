@@ -5,15 +5,23 @@ const authController = require("../controller/auth");
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// Verify email route - support both path param and query param
-router.get("/verify-email", authController.verifyEmail); // Query param: ?token=xxx (works on Render)
-router.get("/verify-email/:token", authController.verifyEmail); // Path param: /verify-email/xxx (fallback)
+// Verify email route - Query param version first (works on Render)
+router.get("/verify-email", authController.verifyEmail);
+// Path param version (may not work on Render, but kept for local/dev)
+router.get("/verify-email/:token", authController.verifyEmail);
 
-// Test route to verify parameter routing works
+// Test routes for debugging
+router.get("/test-token", (req, res) => {
+  res.json({
+    success: true,
+    message: "Query param route works",
+    token: req.query.token || "no token provided"
+  });
+});
 router.get("/test-token/:token", (req, res) => {
   res.json({
     success: true,
-    message: "Token route works",
+    message: "Path param route works",
     token: req.params.token
   });
 });
