@@ -330,9 +330,8 @@ exports.register = async (req, res) => {
       [full_name, email, passwordHash, mobile, verifyToken]
     );
 
-    // 🔗 Verification link (using query param for Render compatibility)
-    // const verifyLink = `${process.env.BASE_URL}/api/verification/verify-email?token=${verifyToken}`;
-    const verifyLink = `https://ecommerce-node-api-1-8ug3.onrender.com/api/verification/verify-email?token=${verifyToken}`;
+    // 🔗 Verification link (using path parameter format)
+    const verifyLink = `https://ecommerce-node-api-1-8ug3.onrender.com/api/verification/verify-email/${verifyToken}`;
 
     // 📧 Send email via Resend
     await sendVerificationEmail({
