@@ -361,6 +361,7 @@ exports.register = async (req, res) => {
    ============================ */
 exports.verifyEmail = async (req, res) => {
   try {
+    console.log("verifyEmail called - req.params:", req.params);
     const { token } = req.params;
 
     if (!token) {
