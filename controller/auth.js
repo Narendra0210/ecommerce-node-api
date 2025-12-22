@@ -363,8 +363,9 @@ exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
 
-console.log(req.params);
-
+    if (!token) {
+      return res.status(400).send("Token is required");
+    }
 
     const [rows] = await pool.query(
       "SELECT user_id FROM users WHERE email_verify_token = ?",
