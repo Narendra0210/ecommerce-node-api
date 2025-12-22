@@ -75,7 +75,14 @@ exports.addCartItem = async (req, res) => {
    ============================ */
 exports.getCartItems = async (req, res) => {
   try {
-    const user_id = req.user.user_id;
+    const user_id = req.query.user_id;
+
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "user_id parameter is required"
+      });
+    }
 
     const [items] = await pool.query(
       `SELECT 
