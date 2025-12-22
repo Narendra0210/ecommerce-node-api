@@ -13,6 +13,7 @@ const categoryRouter = require("./routes/categoryRouter");
 const subCategoryRouter = require("./routes/subCategoryRouter");
 const itemRouter = require("./routes/itemRouter");
 const cartRouter = require("./routes/cartRouter");
+const orderRouter = require("./routes/orderRouter");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/menu", categoryRouter);
 app.use("/api/subcategories", subCategoryRouter);
 app.use("/api/items", itemRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/orders", orderRouter);
 
 
 app.get("/", (req, res) => {
