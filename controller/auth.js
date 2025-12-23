@@ -392,7 +392,7 @@ exports.login = async (req, res) => {
         message: "User account is inactive"
       });
     }
-x
+
     if (user.email_verified !== 1) {
       return res.status(403).json({
         success: false,
