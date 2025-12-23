@@ -386,19 +386,19 @@ exports.login = async (req, res) => {
 
     const user = rows[0];
 
-//     if (user.is_active !== 1) {
-//       return res.status(403).json({
-//         success: false,
-//         message: "User account is inactive"
-//       });
-//     }
-// x
-//     if (user.email_verified !== 1) {
-//       return res.status(403).json({
-//         success: false,
-//         message: "Please verify your email before login"
-//       });
-//     }
+    if (user.is_active !== 1) {
+      return res.status(403).json({
+        success: false,
+        message: "User account is inactive"
+      });
+    }
+x
+    if (user.email_verified !== 1) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email before login"
+      });
+    }
 
     const isPasswordValid = await bcrypt.compare(
       password,
