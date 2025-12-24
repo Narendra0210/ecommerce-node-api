@@ -4,7 +4,6 @@ exports.getItemsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
 
-    // validation
     if (!categoryId) {
       return res.status(400).json({
         success: false,
@@ -17,6 +16,11 @@ exports.getItemsByCategory = async (req, res) => {
          item_id,
          item_name,
          price,
+         discount_percent,
+         ROUND(
+           price - (price * discount_percent / 100),
+           2
+         ) AS discounted_price,
          category_id
        FROM items
        WHERE category_id = ?
