@@ -67,8 +67,7 @@ exports.getCategoriesAndItems = async (req, res) => {
          ) AS discounted_price,
          category_id
        FROM items
-       WHERE category_id = ?
-         AND is_active = 1`
+       WHERE is_active = 1`
     );
 
     res.json({
