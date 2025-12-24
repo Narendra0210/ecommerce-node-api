@@ -56,9 +56,19 @@ exports.getCategoriesAndItems = async (req, res) => {
     );
 
     const [items] = await mysqlPool.query(
-      `SELECT item_id, item_name, price, category_id 
-       FROM items 
-       WHERE is_active = 1`
+      `SELECT 
+         item_id,
+         item_name,
+         price,
+         discount_percent,
+         ROUND(
+           price - (price * discount_percent / 100),
+           2
+         ) AS discounted_price,
+         category_id
+       FROM items
+       WHERE category_id = ?
+         AND is_active = 1`
     );
 
     res.json({
