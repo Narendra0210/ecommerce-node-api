@@ -14,6 +14,7 @@ const subCategoryRouter = require("./routes/subCategoryRouter");
 const itemRouter = require("./routes/itemRouter");
 const cartRouter = require("./routes/cartRouter");
 const orderRouter = require("./routes/orderRouter");
+const wishlistRouter = require("./routes/wishlistRouter");
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.use("/api/subcategories", subCategoryRouter);
 app.use("/api/items", itemRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
-
+app.use("/api/wishlist", wishlistRouter);
 
 app.get("/", (req, res) => {
   res.send("API ROOT WORKING");
