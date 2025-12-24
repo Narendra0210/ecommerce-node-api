@@ -101,10 +101,10 @@ exports.placeOrder = async (req, res) => {
     );
 
     // Optionally: Clear cart after order is placed
-    // await connection.query(
-    //   "DELETE FROM order_items WHERE user_id = ? AND order_id = ?",
-    //   [user_id, orderId]
-    // );
+    await connection.query(
+      "DELETE FROM order_items WHERE user_id = ? AND order_id = ?",
+      [user_id, orderId]
+    );
 
     await connection.commit();
 
