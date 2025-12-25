@@ -12,11 +12,11 @@ exports.addCartItem = async (req, res) => {
       return res.status(400).json({ message: "Invalid payload" });
     }
 
-    // check if item exists for this user
+    // check if item exists for this user (only cart items)
     const [rows] = await pool.query(
-      `SELECT order_item_id 
+      `SELECT order_item_id, status
        FROM order_items 
-       WHERE user_id = ? AND product_id = ?`,
+       WHERE user_id = ? AND product_id = ? AND status = 'cart'`,
       [user_id, product_id]
     );
 
@@ -24,7 +24,7 @@ exports.addCartItem = async (req, res) => {
     if (quantity === 0) {
       await pool.query(
         `DELETE FROM order_items 
-         WHERE user_id = ? AND product_id = ?`,
+         WHERE user_id = ? AND product_id = ? AND status = 'cart'`,
         [user_id, product_id]
       );
 
@@ -34,14 +34,14 @@ exports.addCartItem = async (req, res) => {
       });
     }
 
-    // UPDATE ITEM
+    // UPDATE ITEM (only if status is cart)
     if (rows.length > 0) {
       await pool.query(
         `UPDATE order_items
          SET quantity = ?, 
              total_price = ?, 
              updated_at = NOW()
-         WHERE user_id = ? AND product_id = ?`,
+         WHERE user_id = ? AND product_id = ? AND status = 'cart'`,
         [quantity, quantity * price, user_id, product_id]
       );
 
@@ -54,9 +54,9 @@ exports.addCartItem = async (req, res) => {
     // INSERT ITEM
     await pool.query(
       `INSERT INTO order_items
-       (user_id, product_id, quantity, price, total_price)
-       VALUES (?, ?, ?, ?, ?)`,
-      [user_id, product_id, quantity, price, quantity * price]
+       (user_id, product_id, quantity, price, total_price, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [user_id, product_id, quantity, price, quantity * price, 'cart']
     );
 
     res.json({
@@ -94,7 +94,7 @@ exports.getCartItems = async (req, res) => {
          oi.total_price
        FROM order_items oi
        JOIN items i ON i.item_id = oi.product_id
-       WHERE oi.user_id = ?`,
+       WHERE oi.user_id = ? and oi.status = 'cart'`,
       [user_id]
     );
 

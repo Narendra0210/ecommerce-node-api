@@ -50,7 +50,7 @@ exports.placeOrder = async (req, res) => {
          oi.price,
          oi.total_price
        FROM order_items oi
-       WHERE oi.user_id = ?`,
+       WHERE oi.user_id = ? and oi.status = 'cart'`,
       [user_id]
     );
 
@@ -101,10 +101,17 @@ exports.placeOrder = async (req, res) => {
     );
 
     // Optionally: Clear cart after order is placed
+    // await connection.query(
+    //   "DELETE FROM order_items WHERE user_id = ? AND order_id = ?",
+    //   [user_id, orderId]
+    // );
+
     await connection.query(
-      "DELETE FROM order_items WHERE user_id = ? AND order_id = ?",
-      [user_id, orderId]
-    );
+      `UPDATE order_items 
+       SET status = 'order', order_id = ?
+       WHERE user_id = ? AND status = 'cart'`,
+      [orderId, user_id]
+    );  
 
     await connection.commit();
 
@@ -227,7 +234,7 @@ exports.getOrderDetails = async (req, res) => {
          oi.total_price
        FROM order_items oi
        JOIN items i ON i.item_id = oi.product_id
-       WHERE oi.order_id = ?`,
+       WHERE oi.order_id = ? and oi.status = 'order'`,
       [order_id]
     );
 

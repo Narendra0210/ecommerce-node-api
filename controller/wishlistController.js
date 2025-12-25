@@ -48,9 +48,12 @@ exports.getWishlist = async (req, res) => {
          w.wishlist_id,
          i.item_id,
          i.item_name,
-         i.price
+         i.price,
+         i.category_id,
+         c.category_name
        FROM wishlist w
        JOIN items i ON i.item_id = w.product_id
+       JOIN categories c ON c.category_id = i.category_id
        WHERE w.user_id = ?`,
       [user_id]
     );
