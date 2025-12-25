@@ -12,11 +12,11 @@ exports.addCartItem = async (req, res) => {
       return res.status(400).json({ message: "Invalid payload" });
     }
 
-    // check if item exists for this user (only cart items)
+    // check if item exists for this user (any status)
     const [rows] = await pool.query(
       `SELECT order_item_id, status
        FROM order_items 
-       WHERE user_id = ? AND product_id = ? AND status = 'cart'`,
+       WHERE user_id = ? AND product_id = ?`,
       [user_id, product_id]
     );
 
@@ -34,14 +34,15 @@ exports.addCartItem = async (req, res) => {
       });
     }
 
-    // UPDATE ITEM (only if status is cart)
-    if (rows.length >= 1) {
+    // UPDATE ITEM (if exists, update to cart status)
+    if (rows.length > 0) {
       await pool.query(
         `UPDATE order_items
          SET quantity = ?, 
              total_price = ?, 
+             status = 'cart',
              updated_at = NOW()
-         WHERE user_id = ? AND product_id = ? AND status = 'cart'`,
+         WHERE user_id = ? AND product_id = ?`,
         [quantity, quantity * price, user_id, product_id]
       );
 
@@ -51,7 +52,7 @@ exports.addCartItem = async (req, res) => {
       });
     }
 
-    // INSERT ITEM
+    // INSERT ITEM (only if doesn't exist)
     await pool.query(
       `INSERT INTO order_items
        (user_id, product_id, quantity, price, total_price, status)
