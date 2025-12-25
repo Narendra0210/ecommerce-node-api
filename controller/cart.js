@@ -35,7 +35,7 @@ exports.addCartItem = async (req, res) => {
     }
 
     // UPDATE ITEM (only if status is cart)
-    if (rows.length > 0) {
+    if (rows.length >= 1) {
       await pool.query(
         `UPDATE order_items
          SET quantity = ?, 
