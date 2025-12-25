@@ -12,11 +12,11 @@ exports.addCartItem = async (req, res) => {
       return res.status(400).json({ message: "Invalid payload" });
     }
 
-    // check if item exists for this user (any status)
-    const [rows] = await pool.query(
+    // Check if item exists for this user with status='cart' (user_id + product_id)
+    const [cartRows] = await pool.query(
       `SELECT order_item_id, status
        FROM order_items 
-       WHERE user_id = ? AND product_id = ?`,
+       WHERE user_id = ? AND product_id = ? AND status = 'cart'`,
       [user_id, product_id]
     );
 
@@ -34,16 +34,16 @@ exports.addCartItem = async (req, res) => {
       });
     }
 
-    // UPDATE ITEM (if exists, update to cart status)
-    if (rows.length > 0) {
+    // UPDATE ITEM - if exists with status='cart', update it
+    if (cartRows.length > 0) {
+      // Update the existing cart item (using order_item_id for uniqueness)
       await pool.query(
         `UPDATE order_items
          SET quantity = ?, 
              total_price = ?, 
-             status = 'cart',
              updated_at = NOW()
-         WHERE user_id = ? AND product_id = ?`,
-        [quantity, quantity * price, user_id, product_id]
+         WHERE user_id = ? AND product_id = ? AND status = 'cart' AND order_item_id = ?`,
+        [quantity, quantity * price, user_id, product_id, cartRows[0].order_item_id]
       );
 
       return res.json({
@@ -52,7 +52,17 @@ exports.addCartItem = async (req, res) => {
       });
     }
 
-    // INSERT ITEM (only if doesn't exist)
+    // Check if item exists with status='ordered' (user_id + product_id)
+    const [orderedRows] = await pool.query(
+      `SELECT order_item_id, status
+       FROM order_items 
+       WHERE user_id = ? AND product_id = ? AND status = 'ordered'`,
+      [user_id, product_id]
+    );
+
+    // If item exists with status='ordered', keep it and insert new cart item
+    // The new insert will have a different order_item_id, so it will be unique
+    // If item doesn't exist at all, insert new cart item
     await pool.query(
       `INSERT INTO order_items
        (user_id, product_id, quantity, price, total_price, status)
