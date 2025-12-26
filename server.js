@@ -16,6 +16,7 @@ const cartRouter = require("./routes/cartRouter");
 const orderRouter = require("./routes/orderRouter");
 const wishlistRouter = require("./routes/wishlistRouter");
 const paymentRouter = require("./routes/paymentRouter");
+const sellerOrderRouter = require("./routes/sellerOrderRouter");
 const app = express();
 
 app.use(cors());
@@ -31,6 +32,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/payment", paymentRouter);
+app.use("/api/seller/orders", sellerOrderRouter);
 app.get("/", (req, res) => {
   res.send("API ROOT WORKING");
 });
