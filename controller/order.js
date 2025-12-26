@@ -208,6 +208,7 @@ exports.getOrderDetails = async (req, res) => {
          o.order_number,
          o.user_id,
          o.status,
+         o.ordered_status,
          o.total_amount,
          o.created_at,
          o.updated_at

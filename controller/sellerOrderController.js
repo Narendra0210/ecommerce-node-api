@@ -98,20 +98,45 @@ exports.getAllPaidOrders = async (req, res) => {
          o.updated_at,
          u.full_name as customer_name,
          u.email as customer_email,
-         u.mobile as customer_mobile,
-         COUNT(oi.order_item_id) as items_count
+         u.mobile as customer_mobile
        FROM orders o
        LEFT JOIN users u ON u.user_id = o.user_id
-       LEFT JOIN order_items oi ON oi.order_id = o.order_id
        WHERE o.status = 'PAID'
-       GROUP BY o.order_id
        ORDER BY o.created_at DESC`
+    );
+
+    // Get items for each order
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const [items] = await pool.query(
+          `SELECT 
+             oi.order_item_id,
+             oi.product_id,
+             i.item_name,
+             i.price as item_price,
+             oi.quantity,
+             oi.price,
+             oi.total_price,
+             c.category_name
+           FROM order_items oi
+           JOIN items i ON i.item_id = oi.product_id
+           LEFT JOIN categories c ON c.category_id = i.category_id
+           WHERE oi.order_id = ?`,
+          [order.order_id]
+        );
+
+        return {
+          ...order,
+          items: items,
+          items_count: items.length
+        };
+      })
     );
 
     res.json({
       success: true,
-      data: orders,
-      count: orders.length
+      data: ordersWithItems,
+      count: ordersWithItems.length
     });
 
   } catch (error) {

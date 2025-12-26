@@ -4,6 +4,7 @@ const authController = require("../controller/auth");
 
 router.post("/register", authController.register);
 router.post("/login", authController.login);
+router.post("/logout", authController.logout);
 
 router.get("/__debug", (req, res) => {
   res.send("LOGIN ROUTER IS WORKING");

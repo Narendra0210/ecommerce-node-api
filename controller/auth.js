@@ -443,3 +443,26 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+/* ============================
+   3️⃣ LOGOUT
+   ============================ */
+exports.logout = async (req, res) => {
+  try {
+    // With JWT, logout is typically handled client-side by removing the token
+    // This endpoint provides a confirmation response
+    // You can also implement token blacklisting here if needed
+    
+    res.json({
+      success: true,
+      message: "Logout successful"
+    });
+
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
