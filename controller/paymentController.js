@@ -50,6 +50,7 @@ exports.createPaymentOrder = async (req, res) => {
     res.json({
       success: true,
       key: process.env.RAZORPAY_KEY_ID,
+      id: razorpayOrder.id,
       razorpayOrder
     });
 
