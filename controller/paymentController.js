@@ -68,42 +68,157 @@ exports.verifyPayment = async (req, res) => {
       const {
         razorpay_order_id,
         razorpay_payment_id,
-        razorpay_signature
+        razorpay_signature,
+        payment_status
       } = req.body;
   
-      const sign = razorpay_order_id + "|" + razorpay_payment_id;
-  
-      const expectedSign = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-        .update(sign)
-        .digest("hex");
-  
-      if (expectedSign !== razorpay_signature) {
+      if (!razorpay_order_id || !razorpay_payment_id) {
         return res.status(400).json({
           success: false,
-          message: "Invalid payment signature"
+          message: "razorpay_order_id and razorpay_payment_id are required"
         });
       }
-  
-      // ✅ Update order status to PAID
-      await pool.query(
-        `UPDATE orders
-         SET status = 'PAID',
-             razorpay_payment_id = ?
-         WHERE razorpay_order_id = ?`,
-        [razorpay_payment_id, razorpay_order_id]
+
+      // Get order from database
+      const [orders] = await pool.query(
+        "SELECT order_id, status, total_amount FROM orders WHERE razorpay_order_id = ?",
+        [razorpay_order_id]
       );
-  
-      res.json({
-        success: true,
-        message: "Payment verified and order settled"
-      });
+
+      if (orders.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found"
+        });
+      }
+
+      const order = orders[0];
+
+      // Check if payment status is provided and indicates failure
+      if (payment_status && (payment_status === 'failed' || payment_status === 'cancelled')) {
+        // Update order status to FAILED
+        await pool.query(
+          `UPDATE orders
+           SET status = 'FAILED',
+               razorpay_payment_id = ?
+           WHERE razorpay_order_id = ?`,
+          [razorpay_payment_id, razorpay_order_id]
+        );
+
+        return res.status(400).json({
+          success: false,
+          message: "Payment failed or cancelled",
+          payment_status: payment_status
+        });
+      }
+
+      // Verify payment signature (only if payment is successful)
+      if (razorpay_signature) {
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        
+        const expectedSign = crypto
+          .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+          .update(sign)
+          .digest("hex");
+    
+        if (expectedSign !== razorpay_signature) {
+          // Update order status to FAILED due to invalid signature
+          await pool.query(
+            `UPDATE orders
+             SET status = 'FAILED',
+                 razorpay_payment_id = ?
+             WHERE razorpay_order_id = ?`,
+            [razorpay_payment_id, razorpay_order_id]
+          );
+
+          return res.status(400).json({
+            success: false,
+            message: "Invalid payment signature - Payment verification failed"
+          });
+        }
+      }
+
+      // Fetch payment details from Razorpay to verify payment status
+      try {
+        const payment = await razorpay.payments.fetch(razorpay_payment_id);
+        
+        // Check payment status
+        if (payment.status === 'failed' || payment.status === 'cancelled') {
+          // Update order status to FAILED
+          await pool.query(
+            `UPDATE orders
+             SET status = 'FAILED',
+                 razorpay_payment_id = ?
+             WHERE razorpay_order_id = ?`,
+            [razorpay_payment_id, razorpay_order_id]
+          );
+
+          return res.status(400).json({
+            success: false,
+            message: `Payment ${payment.status}`,
+            payment_status: payment.status,
+            payment_error: payment.error_description || payment.error_reason
+          });
+        }
+
+        // Verify payment amount matches order amount
+        const paymentAmount = payment.amount / 100; // Convert from paise to rupees
+        if (paymentAmount !== parseFloat(order.total_amount)) {
+          // Update order status to FAILED due to amount mismatch
+          await pool.query(
+            `UPDATE orders
+             SET status = 'FAILED',
+                 razorpay_payment_id = ?
+             WHERE razorpay_order_id = ?`,
+            [razorpay_payment_id, razorpay_order_id]
+          );
+
+          return res.status(400).json({
+            success: false,
+            message: "Payment amount mismatch",
+            expected_amount: order.total_amount,
+            received_amount: paymentAmount
+          });
+        }
+
+        // ✅ Payment is successful - Update order status to PAID
+        await pool.query(
+          `UPDATE orders
+           SET status = 'PAID',
+               razorpay_payment_id = ?
+           WHERE razorpay_order_id = ?`,
+          [razorpay_payment_id, razorpay_order_id]
+        );
+
+        res.json({
+          success: true,
+          message: "Payment verified and order settled",
+          payment_status: payment.status
+        });
+
+      } catch (razorpayError) {
+        // If we can't fetch payment details, mark as failed
+        await pool.query(
+          `UPDATE orders
+           SET status = 'FAILED',
+               razorpay_payment_id = ?
+           WHERE razorpay_order_id = ?`,
+          [razorpay_payment_id, razorpay_order_id]
+        );
+
+        return res.status(400).json({
+          success: false,
+          message: "Unable to verify payment with Razorpay",
+          error: razorpayError.message
+        });
+      }
   
     } catch (error) {
       console.error("Verify payment error:", error);
       res.status(500).json({
         success: false,
-        message: "Server error"
+        message: "Server error",
+        error: error.message
       });
     }
   };
