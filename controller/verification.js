@@ -1,4 +1,4 @@
-const pool = require("../config/db");
+const verificationService = require("../services/verificationService");
 
 /* ============================
    VERIFY EMAIL
@@ -13,30 +13,15 @@ exports.verifyEmail = async (req, res) => {
       return res.status(400).send("Token is required");
     }
 
-    const [rows] = await pool.query(
-      "SELECT user_id FROM users WHERE email_verify_token = ?",
-      [token]
-    );
+    const result = await verificationService.verifyEmail(token);
 
-    if (rows.length === 0) {
-      return res.status(400).send("Invalid or expired verification link");
-    }
-
-    await pool.query(
-      `UPDATE users
-       SET email_verified = 1, email_verify_token = NULL
-       WHERE email_verify_token = ?`,
-      [token]
-    );
-
-    res.send(`
-      <h2>Email verified successfully ✅</h2>
-      <p>You can now login.</p>
-    `);
+    res.send(result.html);
 
   } catch (error) {
     console.error("Verify email error:", error);
-    res.status(500).send("Server error");
+    const status = error.status || 500;
+    const message = error.message || "Server error";
+    res.status(status).send(message);
   }
 };
 

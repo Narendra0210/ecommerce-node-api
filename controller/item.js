@@ -1,4 +1,4 @@
-const mysqlPool = require("../config/db");
+const itemService = require("../services/itemService");
 
 exports.getItemsByCategory = async (req, res) => {
   try {
@@ -11,26 +11,11 @@ exports.getItemsByCategory = async (req, res) => {
       });
     }
 
-    const [rows] = await mysqlPool.query(
-      `SELECT 
-         item_id,
-         item_name,
-         price,
-         discount_percent,
-         ROUND(
-           price - (price * discount_percent / 100),
-           2
-         ) AS discounted_price,
-         category_id
-       FROM items
-       WHERE category_id = ?
-         AND is_active = 1`,
-      [categoryId]
-    );
+    const data = await itemService.getItemsByCategory(categoryId);
 
     res.json({
       success: true,
-      data: rows
+      data: data
     });
 
   } catch (error) {

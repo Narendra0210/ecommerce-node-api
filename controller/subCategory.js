@@ -1,4 +1,4 @@
-const mysqlPool = require("../config/db");
+const subCategoryService = require("../services/subCategoryService");
 
 exports.getSubCategoriesByCategory = async (req, res) => {
   try {
@@ -12,19 +12,11 @@ exports.getSubCategoriesByCategory = async (req, res) => {
       });
     }
 
-    const [rows] = await mysqlPool.query(
-      `SELECT 
-         sub_category_id,
-         sub_category_name,
-         category_id
-       FROM sub_categories
-       WHERE category_id = ? AND is_active = 1`,
-      [categoryId]
-    );
+    const data = await subCategoryService.getSubCategoriesByCategory(categoryId);
 
     res.json({
       success: true,
-      data: rows
+      data: data
     });
 
   } catch (error) {
